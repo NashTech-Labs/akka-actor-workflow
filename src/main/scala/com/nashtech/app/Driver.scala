@@ -4,10 +4,12 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import com.nashtech.actor.UserActor
-import com.nashtech.model.ActorModel.{AddUser, DeleteUser, GetAllUser, GetUser}
+import com.nashtech.model.ActorModel.*
 import com.nashtech.model.User
 import com.nashtech.service.UserService
+import com.typesafe.akka.`extension`.quartz.QuartzSchedulerExtension
 
+import java.util.TimeZone
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.util.{Failure, Success}
@@ -70,5 +72,24 @@ object Driver extends App {
     case Failure(exception) => println("\nGet Exception while processing")
     case Success(value) => println("\nAll User:" + value)
   }
+
+  /* Created the Job to Schedule at fix timing as per UTC */
+  QuartzSchedulerExtension
+    .get(system)
+    .createSchedule(
+      "JobSchedule",
+      None,
+      "59 59 23 * * ?",
+      None,
+      TimeZone.getTimeZone("UTC")
+    )
+
+  QuartzSchedulerExtension
+    .get(system)
+    .schedule(
+      "JobSchedule",
+      userActor,
+      JobSchedule
+    )
 
 }

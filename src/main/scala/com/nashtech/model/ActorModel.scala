@@ -8,4 +8,6 @@ object ActorModel {
   case object GetAllUser
 
   case class DeleteUser(id: Int)
+  
+  case object JobSchedule
 }
